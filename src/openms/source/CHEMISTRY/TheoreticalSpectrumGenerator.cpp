@@ -338,6 +338,7 @@ namespace OpenMS
   {
     String charge_Str((Size)abs(charge), '+');
     String residue_Str(Residue::residueTypeToIonLetter(res_type));
+    String ion_Str(ion.size());
 
     // manually compute correct sum formula (instead of using built-in assumption of hydrogen adduct)
     EmpiricalFormula f = ion.getFormula(res_type, charge) + EmpiricalFormula("H") * charge;
@@ -354,15 +355,15 @@ namespace OpenMS
       dist = f.getIsotopeDistribution(FineIsotopePatternGenerator(max_isotope_probability_));
     }
 
-    String ion_name = residue_Str + String(ion.size()) + charge_Str;
-
     for (const auto& it : dist)
     {
       p.setMZ(it.getMZ() / charge);
       p.setIntensity(intensity * it.getIntensity());
       if (add_metainfo_) // one entry per peak
       {
-        ion_names.emplace_back(ion_name);
+        ion_names.emplace_back(residue_Str );
+        ion_names.back().reserve(1 + ion_Str.size() + charge_Str.size());
+        (ion_names.back() += ion_Str) += charge_Str;
         charges.push_back(charge);
       }
       spectrum.push_back(p);
@@ -487,7 +488,6 @@ namespace OpenMS
         }
 
         // note: important to construct a string from char. If omitted it will perform pointer arithmetics on the "-" string literal
-        String ion_name = String(Residue::residueTypeToIonLetter(res_type)) + String(ion.size()) + "-" + loss_name + String((Size)abs(charge), '+');
 
         for (const auto& iso : dist)
         {
@@ -671,7 +671,7 @@ namespace OpenMS
           if (add_metainfo_)
           {
             ion_names.emplace_back(residue_Str);
-            //note: size of Residue::residueTypeToIonLetter(res_type) : 1. size of String(i + 1) : 2;
+            //note: size of Residue::residueTypeToIonLetter(res_type) : 1. size of Peptide.size() - i : 3;
             ion_names.back().reserve(1 + 3 + charge_Str.size());
             (ion_names.back() += Size(peptide.size() - i)) += charge_Str;
             charges.push_back(charge);
