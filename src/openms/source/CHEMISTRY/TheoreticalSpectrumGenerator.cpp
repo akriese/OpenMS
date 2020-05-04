@@ -224,8 +224,7 @@ namespace OpenMS
       p.setIntensity(1.0);
       if (add_metainfo_)
       {
-        String ion_name("iH");
-        ion_names.push_back(ion_name);
+        ion_names.push_back("iH");
         charges.push_back(1);
       }
       spectrum.push_back(p);
@@ -238,8 +237,7 @@ namespace OpenMS
       p.setIntensity(1.0);
       if (add_metainfo_)
       {
-        String ion_name("iF");
-        ion_names.push_back(ion_name);
+        ion_names.push_back("iF");
         charges.push_back(1);
       }
       spectrum.push_back(p);
@@ -252,8 +250,7 @@ namespace OpenMS
       p.setIntensity(1.0);
       if (add_metainfo_)
       {
-        String ion_name("iY");
-        ion_names.push_back(ion_name);
+        ion_names.push_back("iY");
         charges.push_back(1);
       }
       spectrum.push_back(p);
@@ -266,8 +263,7 @@ namespace OpenMS
       p.setIntensity(1.0);
       if (add_metainfo_)
       {
-        String ion_name("iL/I");
-        ion_names.push_back(ion_name);
+        ion_names.push_back("iL/I");
         charges.push_back(1);
       }
       spectrum.push_back(p);
@@ -280,8 +276,7 @@ namespace OpenMS
       p.setIntensity(1.0);
       if (add_metainfo_)
       {
-        String ion_name("iW");
-        ion_names.push_back(ion_name);
+        ion_names.push_back("iW");
         charges.push_back(1);
       }
       spectrum.push_back(p);
@@ -294,8 +289,7 @@ namespace OpenMS
       p.setIntensity(1.0);
       if (add_metainfo_)
       {
-        String ion_name("iC");
-        ion_names.push_back(ion_name);
+        ion_names.push_back("iC");
         charges.push_back(1);
       }
       spectrum.push_back(p);
@@ -308,8 +302,7 @@ namespace OpenMS
       p.setIntensity(1.0);
       if (add_metainfo_)
       {
-        String ion_name("iP");
-        ion_names.push_back(ion_name);
+        ion_names.push_back("iP");
         charges.push_back(1);
       }
       spectrum.push_back(p);
@@ -338,6 +331,7 @@ namespace OpenMS
   {
     String charge_Str((Size)abs(charge), '+');
     String residue_Str(Residue::residueTypeToIonLetter(res_type));
+    String ion_Str(ion.size());
 
     // manually compute correct sum formula (instead of using built-in assumption of hydrogen adduct)
     EmpiricalFormula f = ion.getFormula(res_type, charge) + EmpiricalFormula("H") * charge;
@@ -354,15 +348,15 @@ namespace OpenMS
       dist = f.getIsotopeDistribution(FineIsotopePatternGenerator(max_isotope_probability_));
     }
 
-    String ion_name = residue_Str + String(ion.size()) + charge_Str;
-
     for (const auto& it : dist)
     {
       p.setMZ(it.getMZ() / charge);
       p.setIntensity(intensity * it.getIntensity());
       if (add_metainfo_) // one entry per peak
       {
-        ion_names.emplace_back(ion_name);
+        ion_names.emplace_back(residue_Str );
+        ion_names.back().reserve(1 + ion_Str.size() + charge_Str.size());
+        (ion_names.back() += ion_Str) += charge_Str;
         charges.push_back(charge);
       }
       spectrum.push_back(p);
@@ -487,7 +481,6 @@ namespace OpenMS
         }
 
         // note: important to construct a string from char. If omitted it will perform pointer arithmetics on the "-" string literal
-        String ion_name = String(Residue::residueTypeToIonLetter(res_type)) + String(ion.size()) + "-" + loss_name + String((Size)abs(charge), '+');
 
         for (const auto& iso : dist)
         {
@@ -671,7 +664,7 @@ namespace OpenMS
           if (add_metainfo_)
           {
             ion_names.emplace_back(residue_Str);
-            //note: size of Residue::residueTypeToIonLetter(res_type) : 1. size of String(i + 1) : 2;
+            //note: size of Residue::residueTypeToIonLetter(res_type) : 1. size of Peptide.size() - i : 3;
             ion_names.back().reserve(1 + 3 + charge_Str.size());
             (ion_names.back() += Size(peptide.size() - i)) += charge_Str;
             charges.push_back(charge);
